@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_alignParentLeft="true"
+                        android:background="#00CC00"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="7dp"
+                        android:text="正在安装"
+                        android:textSize="20dp" />
+
+                    <ImageView
+                        android:id="@+id/refreshAppInstallList"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/stat_notify_sync" />
+                </RelativeLayout>
+
+                <ListView
+                    android:id="@+id/AppInstallingListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:cacheColorHint="#00000000"
+                    android:divider="#FFFFFF"
+                    android:dividerHeight="1dp"
+                    android:listSelector="#00000000"
+                    android:scrollbars="none"
+                    android:visibility="gone" >
+                </ListView>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_marginTop="20dp"
+                        android:background="#6699FF"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="7dp"
+                        android:text="安装成功"
+                        android:textSize="20dp" />
+
+                    <ImageView
+                        android:id="@+id/clearSuccessList"
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="30dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginRight="10dp"
+                        android:src="@drawable/ic_menu_delete" />
+                </RelativeLayout>
+
+                <ListView
+                    android:id="@+id/AppInstallSuccessListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:cacheColorHint="#00000000"
+                    android:divider="#FFFFFF"
+                    android:dividerHeight="1dp"
+                    android:listSelector="#00000000"
+                    android:scrollbars="none"
+                    android:visibility="gone" >
+                </ListView>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_marginTop="20dp"
+                        android:background="#CC0000"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="7dp"
+                        android:text="安装失败"
+                        android:textSize="20dp" />
+
+                    <ImageView
+                        android:id="@+id/clearFailedList"
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginTop="30dp"
+                        android:layout_marginRight="10dp"
+                        android:src="@drawable/ic_menu_delete" />
+                </RelativeLayout>
+
+                <ListView
+                    android:id="@+id/AppInstallFailedListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:cacheColorHint="#00000000"
+                    android:divider="#FFFFFF"
+                    android:dividerHeight="1dp"
+                    android:listSelector="#00000000"
+                    android:scrollbars="none"
+                    android:visibility="gone" >
+                </ListView>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
