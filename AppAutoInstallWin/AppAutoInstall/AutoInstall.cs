@@ -350,9 +350,9 @@ namespace AppAutoInstall
 
             try
             {
-                serverIP = System.Configuration.ConfigurationManager.AppSettings["192.168.1.116"];
+                serverIP = System.Configuration.ConfigurationManager.AppSettings["192.168.1.***"];
                 userName = System.Configuration.ConfigurationManager.AppSettings["MVP"];
-                password = System.Configuration.ConfigurationManager.AppSettings["song19911020"];
+                password = System.Configuration.ConfigurationManager.AppSettings["*******"];
                 url = "ftp://" + serverIP + "/" + Path.GetFileName(filename);
 
                 FileStream outputStream = new FileStream("E:\\Users\\MVP\\Desktop\\E2Mmsi\\" + filename, FileMode.Create);    //下载的文件保存路径
