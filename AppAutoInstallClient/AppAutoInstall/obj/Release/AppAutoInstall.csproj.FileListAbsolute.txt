@@ -1,6 +1,0 @@
-E:\Users\MVP\Desktop\AppAutoInstall后台\AppAutoInstall\bin\Release\AppAutoInstall.exe.config
-E:\Users\MVP\Desktop\AppAutoInstall后台\AppAutoInstall\bin\Release\AppAutoInstall.exe
-E:\Users\MVP\Desktop\AppAutoInstall后台\AppAutoInstall\bin\Release\AppAutoInstall.pdb
-E:\Users\MVP\Desktop\AppAutoInstall后台\AppAutoInstall\obj\Release\AppAutoInstall.csprojResolveAssemblyReference.cache
-E:\Users\MVP\Desktop\AppAutoInstall后台\AppAutoInstall\obj\Release\AppAutoInstall.exe
-E:\Users\MVP\Desktop\AppAutoInstall后台\AppAutoInstall\obj\Release\AppAutoInstall.pdb
