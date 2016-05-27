@@ -1,0 +1,77 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:padding="10dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+        
+        <TextView
+        android:id="@+id/textView1App"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="IP地址" />
+
+        <EditText
+        android:id="@+id/homeServiceIpApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp" >
+        <requestFocus />
+        </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="密码" />
+
+    <EditText
+        android:id="@+id/homeServicePwdApp"
+        android:hint="请输入密码"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp" 
+        android:inputType="textPassword">
+    </EditText>
+
+    <TextView
+        android:id="@+id/textView2App"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="端口号" />
+
+    <EditText
+        android:id="@+id/homeServicePortApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp"
+        android:hint="请输入数字!"
+        android:inputType="number" />
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:padding="10dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+    <Button 
+        android:id="@+id/btnLoginApp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="40dp"
+        android:text="登录"/>
+    <Button 
+        android:id="@+id/btnCancelApp"
+        android:layout_width="wrap_content"
+        android:layout_marginLeft="100dp"
+        android:layout_height="wrap_content"
+        android:text="取消"/>
+    </LinearLayout>
+</LinearLayout>
