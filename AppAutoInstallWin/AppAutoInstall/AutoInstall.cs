@@ -15,6 +15,7 @@ namespace AppAutoInstall
     {
         private static int myPort = 12123;   //端口号
         static Socket serverSocket;
+        static string path = Environment.CurrentDirectory;
 
         private static byte[] result = new byte[4096];   //接收
         private static String receiveAppnamesStrs;       //用户要求安装的Application字符串
@@ -28,8 +29,8 @@ namespace AppAutoInstall
         private static int AppInstallFlag;
         private static int TimeOutFlag;
 
-        private static String AppDownloadCMDPath = "E:\\Users\\MVP\\Desktop\\E2Mmsi\\APPDownload.cmd";    //FTP自动下载脚本文件绝对路径
-        private static String AppInstallCMDPath = "E:\\Users\\MVP\\Desktop\\E2Mmsi\\APPInstall.cmd";      //自动安装脚本文件绝对路径
+        private static String AppDownloadCMDPath = path + "\\APPDownload.cmd";    //FTP自动下载脚本文件绝对路径
+        private static String AppInstallCMDPath = path + "\\APPInstall.cmd";      //自动安装脚本文件绝对路径
 
         public enum ShowCommands : int
         {
@@ -71,16 +72,23 @@ namespace AppAutoInstall
             serverSocket.Listen(10);
             Console.WriteLine("启动监听{0}成功", serverSocket.LocalEndPoint.ToString());
 
-            //准备工作————为客户机新建本地存储文件夹
-            if(Directory.Exists("E:\\Users\\MVP\\Desktop\\E2Mmsi") == false)
-            {
-                Directory.CreateDirectory("E:\\Users\\MVP\\Desktop\\E2Mmsi");
-            }
-            
-            Thread myThread = new Thread(ListenClientConnect);
-            myThread.Start();
-        }
+            Console.WriteLine(path);
 
+
+           Thread myThread = new Thread(ListenClientConnect);
+            myThread.Start();
+
+            //if (checkAPPInWindows("WPS Office"))
+            //{
+            //    Console.WriteLine("sdaf");
+            //}
+            //else
+            //{
+            //    Console.WriteLine("failed");
+            //}
+            //Console.ReadLine();
+        }
+        
         private static void ListenClientConnect()
         {
             while (true)
@@ -98,12 +106,10 @@ namespace AppAutoInstall
             try
             {
                 int receiveNumber = myClientSocket.Receive(result);
-
                 Console.WriteLine("启动监听{0}成功", myClientSocket.RemoteEndPoint.ToString());
 
                 receiveAppnamesStrs = System.Text.Encoding.UTF8.GetString(result, 0, receiveNumber);
                 Console.WriteLine("请求安装：{0}", receiveAppnamesStrs);
-
 
                 //安装用户要求的应用
                 try
@@ -136,7 +142,7 @@ namespace AppAutoInstall
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("异常{0}", e.Message);
+                    Console.WriteLine("socket异常{0}", e.Message);
                 }
             }
         }
@@ -174,9 +180,9 @@ namespace AppAutoInstall
                     //private static String AppInstallCMDPath = "E:\\Users\\MVP\\Desktop\\E2Mmsi\\APPInstall.cmd";      //自动安装脚本文件绝对路径
 
                     //自动批量下载安装文件（FTP）
-                    ExeCommand(AppDownloadCMDPath, app);
+                    ExeCommand(AppDownloadCMDPath, "\"" + app + "\"");     //防止所要下载文件的文件名中有空格
 
-                    String appFilePath = "E:\\Users\\MVP\\Desktop\\E2Mmsi\\" + app;
+                    String appFilePath = path + "\\" + app;
                     FileInfo appFile = new FileInfo(appFilePath);
                     if (appFile.Exists)
                     {
@@ -184,22 +190,42 @@ namespace AppAutoInstall
 
                         if(appNameStr[i] == "腾讯QQ")
                         {
+                            bool closeFlag = true;
                             Process[] process = Process.GetProcesses();
-                            for (int p = 0; p < process.Length; p++)
+                            for (int p = 0; closeFlag && p < process.Length; p++)
                             {
                                 if (process[p].ProcessName == "QQ")
                                 {
-                                    process[p].Kill();         //安装腾讯QQ之前必须先关闭QQ
+                                    process[p].Kill();
+                                    closeFlag = false;
                                 }
+                            }
+                        }
+                        else if (appNameStr[i] == "WPS Office")
+                        {
+                            Process[] process = Process.GetProcesses();
+                            for (int p = 0; p < process.Length; p++)
+                            {
+                                switch(process[p].ProcessName)
+                                {
+                                    case "wps":    //word
+                                    case "et":     //excel
+                                    case "wpp":    //ppt
+                                        process[p].Kill();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                
                             }
                         }
 
                         //自动安装
                         ExeCommand(AppInstallCMDPath, app);
 
-                        if (watchTimer.IsRunning && watchTimer.ElapsedMilliseconds < 2 * 60 * 1000)
+                        if (watchTimer.IsRunning && watchTimer.ElapsedMilliseconds < 5 * 60 * 1000)
                         {
-                            Console.WriteLine("时间：" + watchTimer.ElapsedMilliseconds);
+                            Console.WriteLine("耗时：" + watchTimer.ElapsedMilliseconds);
                             TimeOutFlag = 0;         //未超时
                             try
                             {
@@ -212,7 +238,7 @@ namespace AppAutoInstall
 
                             if (checkAPPInWindows(appNameStr[i]))
                             {
-                                AppInstallFlag = 0;    //安装成功
+                                AppInstallFlag = 0;      //注册表检测到，安装成功
                             }
                         }
 
@@ -284,7 +310,7 @@ namespace AppAutoInstall
             }
             catch (Exception e)
             {
-                Console.WriteLine("启动出错：{0}", e.Message);
+                Console.WriteLine("启动CMD文件出错：{0}", e.Message);
             }
         }
 
@@ -294,13 +320,16 @@ namespace AppAutoInstall
             //定义注册表操作类并指向注册表的软件信息目录
             Microsoft.Win32.RegistryKey uninstallNode = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
 
-            RegistryKey idCard = Registry.LocalMachine.OpenSubKey("SOFTWARE", true).OpenSubKey(@"SDTtelecom", true);
-            idCard = Registry.LocalMachine.OpenSubKey("SOFTWARE", true).OpenSubKey(@"SDTtelecom", true);
-
-            foreach (string subKeyName in uninstallNode.GetSubKeyNames())
+            foreach(string subKeyName in uninstallNode.GetSubKeyNames())
             {
                 Microsoft.Win32.RegistryKey subKey = uninstallNode.OpenSubKey(subKeyName);   //定义注册表搜索子类
                 object displayName = subKey.GetValue("DisplayName");     //搜索键名为DisplayName的键————根据软件名字查找
+
+                //针对特定软件，检查“InstallRoot”
+                //RegistryKey akeytwo = rk.OpenSubKey(@"SOFTWARE\Kingsoft\Office\6.0\common\");  //查询wps——excel表格               
+                //string filewps = akeytwo.GetValue("InstallRoot").ToString();
+                //if (File.Exists(filewps + @"\office6\et.exe"))
+
                 if (displayName != null)
                 {
                     if (displayName.ToString().Contains(app))
@@ -312,21 +341,26 @@ namespace AppAutoInstall
             return false;
         }
 
-        //对于任何一款应用，从下载到安装成功不得超过2分钟，否则将强制关闭
+        //对于任何一款应用，从下载到安装成功不得超过5分钟，否则将强制关闭
         private static void watchTimeFun(object tmp)
         {
             Stopwatch watchTimer = (Stopwatch)tmp;
             bool flag = true;
             while (flag)
             {
-                if (watchTimer.ElapsedMilliseconds >= 2 * 60 * 1000)
+                if (watchTimer.ElapsedMilliseconds >= 5 * 60 * 1000)
                 {
                     Process[] process = Process.GetProcesses();
                     for (int p = 0; p < process.Length; p++)
                     {
-                        if (process[p].MainWindowTitle == "Exe to msi converter free")
+                        switch (process[p].MainWindowTitle)
                         {
-                            process[p].Kill();
+                            case "Exe to msi converter free":
+                            case "WPS Office":
+                                process[p].Kill();
+                                break;
+                            default:
+                                break;
                         }
                     }
 
@@ -350,9 +384,9 @@ namespace AppAutoInstall
 
             try
             {
-                serverIP = System.Configuration.ConfigurationManager.AppSettings["192.168.1.***"];
+                serverIP = System.Configuration.ConfigurationManager.AppSettings["192.168.1.116"];
                 userName = System.Configuration.ConfigurationManager.AppSettings["MVP"];
-                password = System.Configuration.ConfigurationManager.AppSettings["*******"];
+                password = System.Configuration.ConfigurationManager.AppSettings["song19911020"];
                 url = "ftp://" + serverIP + "/" + Path.GetFileName(filename);
 
                 FileStream outputStream = new FileStream("E:\\Users\\MVP\\Desktop\\E2Mmsi\\" + filename, FileMode.Create);    //下载的文件保存路径
@@ -384,25 +418,6 @@ namespace AppAutoInstall
             }
         }
 
-        private static void newSendSocket()
-        {
-            while (true)
-            {
-                String androidIPStr = "";
-                Socket sendSocket;
-                int androidPort = 8885;
 
-                IPAddress androidIP = IPAddress.Parse(androidIPStr);
-                sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                try
-                {
-                    sendSocket.Connect(new IPEndPoint(androidIP, androidPort));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("异常{0}", e.Message);
-                }
-            }
-        }
     }     
 }
