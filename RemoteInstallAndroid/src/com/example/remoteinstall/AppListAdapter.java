@@ -135,9 +135,7 @@ public class AppListAdapter extends ArrayAdapter<AppInfoItem>  {
 				//Toast toast = Toast.makeText(mContext, "选择安装" + getItem(mPosition).getmAppName(), Toast.LENGTH_SHORT);
 				//showMyToast(toast, 500);
 				
-				//tmpName = tmp.substring(0, tmp.lastIndexOf(".")) + ",";
 				tmpName = tmp  + ",";
-				//appName = getItem(mPosition).getmAppName() + ",";
 				System.out.println("逐次:"+tmpName);
 			}
 			else

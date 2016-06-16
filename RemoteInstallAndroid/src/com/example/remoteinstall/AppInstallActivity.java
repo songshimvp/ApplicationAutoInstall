@@ -12,10 +12,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -316,7 +314,6 @@ public class AppInstallActivity extends Activity {
 	// 此处应该在从服务器获取到以后存入数据库，然后直接从数据库中取相应字段
 	// 获取相应应用的大小
 	private String getAppSize(String appName) {
-		
 		String appSize = "";
 		if (!AppListActivity.resultStr.equals("")) {
 			String[] nameSizeTimeStrs = AppListActivity.resultStr.split(",");
@@ -338,8 +335,6 @@ public class AppInstallActivity extends Activity {
 		if(!AppListActivity.resultStr.equals(""))
 		{
 			String[] nameSizeTimeStrs= AppListActivity.resultStr.split(",");
-			
-			
 			for(int i=0;i<nameSizeTimeStrs.length;i++)
 			{
 				String[] nameSizeTimeStr = nameSizeTimeStrs[i].split("!!!");
@@ -348,7 +343,6 @@ public class AppInstallActivity extends Activity {
 				{
 					appVersion = nameSizeTimeStr[2];
 				}
-				
 			}
 		}
 		return appVersion;

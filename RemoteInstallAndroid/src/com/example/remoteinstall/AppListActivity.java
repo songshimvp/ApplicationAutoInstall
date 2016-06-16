@@ -27,7 +27,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -43,7 +42,6 @@ public class AppListActivity extends Activity {
 	private ImageView syncImage;
 	
 	private Button btnAllChoose;
-	private boolean allChooseFlag = true;
 	private Button btnInstall;       //一键安装需要和远程客户机交互
 	public static boolean btnVisible = true;   //设置“一键安装”按钮是否显示
 	private Button btnProgress;     //安装进度监视
@@ -58,14 +56,13 @@ public class AppListActivity extends Activity {
 	private AppListAdapter mAppAdapter;
 	private List<AppInfoItem> mAppDatas;
 	
-	public static String resultStr = null;
-	private String allNames = "";
+	public static String resultStr = "";
+	private String allNames;
 	
 	private SharedPreferences appInstallSharedPreferences;
 	private SharedPreferences.Editor appInstallEditor;
 	
-	//public static String reqiredInstallAppNames = "";  
-	public String oldReqiredInstallAppNames = "";
+	//public String oldReqiredInstallAppNames = "";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -180,19 +177,32 @@ public class AppListActivity extends Activity {
 					allChooseFlag = true;
 					btnAllChoose.setText("全部选择");
 				}*/
-				String[] nameSizeTimeStrs= resultStr.split(",");
 				
-				for(int i=0;i<nameSizeTimeStrs.length;i++)
-				{
-					String[] nameSizeTimeStr = nameSizeTimeStrs[i].split("!!!");
-					String tmpName = nameSizeTimeStr[0].substring(0, nameSizeTimeStr[0].indexOf("."));
-					allNames += tmpName + ",";
-				}
 				AppListAdapter.reqiredInstallAppNames = "";	   //防止用户已经选择某些应用项，而发生冲突
 				
-				AppSendInfoThread sendAppMsg=new AppSendInfoThread(handler, AppListActivity.this, allNames);     //向客户端发送allNames
-				Thread thread=new Thread(sendAppMsg);
-				thread.start();	
+				allNames = "";
+				
+				if(resultStr!="")
+				{
+					String[] nameSizeTimeStrs= resultStr.split(",");
+					for(int i=0;i<nameSizeTimeStrs.length;i++)
+					{
+						String[] nameSizeTimeStr = nameSizeTimeStrs[i].split("!!!");
+						String tmpName = nameSizeTimeStr[0].substring(0, nameSizeTimeStr[0].indexOf("."));
+						allNames += tmpName + ",";
+					}
+					System.out.println("全部安装："+allNames);
+					
+					
+					AppSendInfoThread sendAppMsg=new AppSendInfoThread(handler, AppListActivity.this, allNames);     //向客户端发送allNames
+					Thread thread=new Thread(sendAppMsg);
+					thread.start();
+				}
+				else
+				{
+					Toast.makeText(AppListActivity.this, "服务器连接错误", Toast.LENGTH_LONG).show();
+				}
+				
 			}
 		});
 		
@@ -203,6 +213,9 @@ public class AppListActivity extends Activity {
 				
 				//“AppListAdapter.reqiredInstallAppNames”是原生的、未做任何判断的、从checkbox直接获得的要求安装的AppName字符串
 				//SharedPreferences应用卸载后还在，但应该是卸载后所有东西重置！
+				allNames = "";
+				
+				 
 				AppSendInfoThread sendAppMsg=new AppSendInfoThread(handler, AppListActivity.this, AppListAdapter.reqiredInstallAppNames);   //向客户端发送appStrs
 				Thread thread=new Thread(sendAppMsg);
 				thread.start();							
@@ -328,7 +341,7 @@ public class AppListActivity extends Activity {
 							receiveAsyncTask.execute(AppSendInfoThread.socketClient);    //异步接收Windows回应的消息
 		
 							appInstallEditor = appInstallSharedPreferences.edit();
-							appInstallEditor.putString("appInstalling", AppListAdapter.reqiredInstallAppNames);
+							appInstallEditor.putString("appInstalling", allNames);
 							appInstallEditor.commit();
 							
 							//finish();
@@ -385,7 +398,16 @@ public class AppListActivity extends Activity {
 			 * Thread.join()可以被interrupt，调用AsyncTask.cancel(true);即可退出等待 
 			 * return null; }
 			 */
-			String installingNames= AppListAdapter.reqiredInstallAppNames;
+			String installingNames = "";
+			if(!AppListAdapter.reqiredInstallAppNames.equals(""))
+			{
+				installingNames = AppListAdapter.reqiredInstallAppNames;
+			}
+			else
+			{
+				installingNames = allNames;
+			}
+			
 			boolean closeFlag = true;
 			while(closeFlag)
 			{
@@ -411,8 +433,7 @@ public class AppListActivity extends Activity {
 						}else if(tmp1.equals("error"))    // 客户机出现异常
 						{
 							failedNames = "远程安装异常";
-						}
-						else
+						}else
 						{
 							failedNames = tmp1;
 						}
@@ -426,8 +447,7 @@ public class AppListActivity extends Activity {
 						}else if(tmp2.equals("error"))   // 客户机出现异常
 						{
 							successNames = "";
-						}
-						else
+						}else
 						{
 							successNames = tmp2;
 						}
@@ -580,7 +600,7 @@ public class AppListActivity extends Activity {
 		} else if (appName.contains("网易云音乐"))
 		{
 			return 6;
-		} else if (appName.contains("WPSOffice"))
+		} else if (appName.contains("WPS Office"))
 		{
 			return 7;
 		} else if (appName.contains("优酷"))

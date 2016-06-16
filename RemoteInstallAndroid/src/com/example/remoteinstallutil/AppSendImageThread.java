@@ -22,7 +22,7 @@ import android.os.Handler;
 
 public class AppSendImageThread implements Runnable
 {
-	private final int TIME_OUT = 2000;
+	private final int TIME_OUT = 5000;
 	Socket socketClient = null;
 	Handler handler = null;
 	Activity activity;
@@ -40,7 +40,7 @@ public class AppSendImageThread implements Runnable
 	 @Override
 	public void run()
 	{
-			String dstAddress="192.168.1.107";       //软件服务器IP地址
+			String dstAddress="192.168.1.107";       //FTP软件服务器IP地址
 			int dstPort = 8888;
 			SocketAddress socAddress = new InetSocketAddress(dstAddress, dstPort);
 			String image_sizes=null;

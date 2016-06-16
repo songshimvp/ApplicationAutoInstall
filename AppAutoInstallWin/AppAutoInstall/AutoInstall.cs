@@ -8,14 +8,17 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Net.NetworkInformation;
 
 namespace AppAutoInstall
 {
     static class AutoInstall
     {
         private static int myPort = 12123;   //端口号
-        static Socket serverSocket;
-        static string path = Environment.CurrentDirectory;
+        private static Socket serverSocket;
+        public static string path = Environment.CurrentDirectory;
 
         private static byte[] result = new byte[4096];   //接收
         private static String receiveAppnamesStrs;       //用户要求安装的Application字符串
@@ -66,29 +69,29 @@ namespace AppAutoInstall
         [STAThread]
         static void Main()
         {
-            IPAddress ip = IPAddress.Parse("0.0.0.0");
-            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.Bind(new IPEndPoint(ip, myPort));
-            serverSocket.Listen(10);
-            Console.WriteLine("启动监听{0}成功", serverSocket.LocalEndPoint.ToString());
+            if (PortInUse(12123))
+            {
+                MessageBox.Show("AppAutoInstall已经打开或者12123端口被占用");
+            }
+            else
+            {
+                ConsoleWin32Helper.ShowNotifyIcon();  //显示系统托盘                
 
-            Console.WriteLine(path);
+                IPAddress ip = IPAddress.Parse("0.0.0.0");
+                serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                serverSocket.Bind(new IPEndPoint(ip, myPort));
+                serverSocket.Listen(10);
+                Console.WriteLine("启动监听{0}成功", serverSocket.LocalEndPoint.ToString());
+                Thread myThread = new Thread(ListenClientConnect);
+                myThread.Start();
 
+                while (true)
+                {
+                    Application.DoEvents();  //用Application.DoEvents()来捕获消息事件处理，但是要用死循环来控制
+                }
+            }
+        }      
 
-           Thread myThread = new Thread(ListenClientConnect);
-            myThread.Start();
-
-            //if (checkAPPInWindows("WPS Office"))
-            //{
-            //    Console.WriteLine("sdaf");
-            //}
-            //else
-            //{
-            //    Console.WriteLine("failed");
-            //}
-            //Console.ReadLine();
-        }
-        
         private static void ListenClientConnect()
         {
             while (true)
@@ -123,12 +126,16 @@ namespace AppAutoInstall
                 {
                     myClientSocket.Send(Encoding.UTF8.GetBytes("error!!!error1\n"));
                     Console.WriteLine("安装异常+:{0}", e.Message);
+                    ConsoleWin32Helper.HideNotifyIcon();
+                    System.Environment.Exit(0);
                 }
             }
             catch (Exception e)
             {
                 myClientSocket.Send(Encoding.UTF8.GetBytes("error!!!error2\n"));
                 Console.WriteLine("接收确认、安装异常++:{0}", e.Message);
+                ConsoleWin32Helper.HideNotifyIcon();
+                System.Environment.Exit(0);
             }
             finally
             {
@@ -143,6 +150,8 @@ namespace AppAutoInstall
                 catch (Exception e)
                 {
                     Console.WriteLine("socket异常{0}", e.Message);
+                    ConsoleWin32Helper.HideNotifyIcon();
+                    System.Environment.Exit(0);
                 }
             }
         }
@@ -373,8 +382,27 @@ namespace AppAutoInstall
             }
         }
 
+        //检测端口是否被占用
+        private static bool PortInUse(int port)
+        {
+            bool inUse = false;
+
+            IPGlobalProperties ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] ipEndPoints = ipProperties.GetActiveTcpListeners();
+
+            foreach (IPEndPoint endPoint in ipEndPoints)
+            {
+                if (endPoint.Port == port)
+                {
+                    inUse = true;
+                    break;
+                }
+            }
+            return inUse;
+        }
+
         //从FTP服务器上下载文件
-        public static int DownloadAppByFtp(string filename)
+        private static int DownloadAppByFtp(string filename)
         {
             FtpWebRequest reqFTP;
             string serverIP;
@@ -386,7 +414,7 @@ namespace AppAutoInstall
             {
                 serverIP = System.Configuration.ConfigurationManager.AppSettings["192.168.1.116"];
                 userName = System.Configuration.ConfigurationManager.AppSettings["MVP"];
-                password = System.Configuration.ConfigurationManager.AppSettings["song19911020"];
+                password = System.Configuration.ConfigurationManager.AppSettings["*****"];
                 url = "ftp://" + serverIP + "/" + Path.GetFileName(filename);
 
                 FileStream outputStream = new FileStream("E:\\Users\\MVP\\Desktop\\E2Mmsi\\" + filename, FileMode.Create);    //下载的文件保存路径
@@ -418,6 +446,58 @@ namespace AppAutoInstall
             }
         }
 
+    }
 
-    }     
+    //管理系统托盘
+    class ConsoleWin32Helper
+    {
+        static ConsoleWin32Helper()
+        {
+            _NotifyIcon.Icon = SetIcon(AutoInstall.path + "\\ooopic_1465784277.ico");
+            _NotifyIcon.Visible = false;
+            _NotifyIcon.Text = "一键远程安装";
+            ContextMenu menu = new ContextMenu();
+            _NotifyIcon.ContextMenu = menu;
+
+            MenuItem item = new MenuItem();
+            item.Text = "退出";
+            item.Index = 0;
+            item.Click += new System.EventHandler(exit_Click);
+            menu.MenuItems.Add(item);            
+        }
+
+        [DllImport("shell32.DLL", EntryPoint = "ExtractAssociatedIcon")]
+        private static extern int ExtractAssociatedIconA(int hInst, string lpIconPath, ref int lpiIcon); //声明函数
+
+        static System.IntPtr thisHandle;
+        private static System.Drawing.Icon SetIcon(string path)
+        {
+            int RefInt = 0;
+            thisHandle = new IntPtr(ExtractAssociatedIconA(0, path, ref RefInt));
+            return System.Drawing.Icon.FromHandle(thisHandle);
+        }
+
+        [DllImport("User32.dll", EntryPoint = "ShowWindow")]
+        private static extern bool ShowWindow(IntPtr hWnd, int type);
+
+        static void exit_Click(object sender, EventArgs e)
+        {
+            //Console.WriteLine("退出");
+            HideNotifyIcon();
+            System.Environment.Exit(0);          
+        }
+
+        #region 托盘图标
+        static NotifyIcon _NotifyIcon = new NotifyIcon();
+        public static void ShowNotifyIcon()
+        {
+            _NotifyIcon.Visible = true;
+            _NotifyIcon.ShowBalloonTip(200, "", "一键远程安装服务已最小化", ToolTipIcon.None);
+        }
+        public static void HideNotifyIcon()
+        {
+            _NotifyIcon.Visible = false;
+        }
+        #endregion
+    }
 }
